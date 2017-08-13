@@ -3,6 +3,7 @@ var bodyParser = require("body-parser");
 var methodOverride = require("method-override");
 var http = require('http');
 var exphbs = require("express-handlebars");
+var db = require("./models");
 
 var app = express();
 var port = normalizePort(process.env.PORT || '3020');
@@ -21,12 +22,14 @@ app.set("view engine", "handlebars");
 var routes = require("./controllers/burger_controller.js");
 app.use("/", routes);
 
+db.sequelize.sync().then(function () {
+    app.listen(port,
+        function () {
+            console.log("App listening on PORT " + port);
+        }
+    );
+});
 
-app.listen(port,
-    function () {
-        console.log("App listening on PORT " + port);
-    }
-);
 
 /**
  * Normalize a port into a number, string, or false.

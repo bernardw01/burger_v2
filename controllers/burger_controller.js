@@ -1,14 +1,14 @@
 var express = require('express');
-
-var burger = require('../models/burger');
-
+// Requiring our models
+var db = require("../models");
 var router = express.Router();
 
-var myBurg = new burger();
 
 // Create all our routes and set up logic within those routes where required.
 router.get("/", function (req, res) {
-    myBurg.getBurgers(function (data) {
+    // findAll returns all entries for a table when used with no options
+    db.BurgerV2.findAll({}).then(function(data) {
+        // We have access to the todos as an argument inside of the callback function
         var hbsObject = {
             burgers: data
         };
@@ -18,25 +18,30 @@ router.get("/", function (req, res) {
 });
 
 router.post("/", function (req, res) {
-    myBurg.insertBurger(
-        req.body.burger_name, req.body.devoured, req.body.date,
-        function () {
-            res.redirect("/");
-        });
+    db.BurgerV2.create({
+        burger_name: req.body.burger_name,
+        devoured: req.body.devoured
+    }).then(function() {
+        res.redirect("/");
+    });
 });
 
 router.post("/update", function (req, res) {
     var burger_id = "id = " + req.body.burger_id;
-
     console.log("Burger ID: ", burger_id);
-
-    myBurg.updateBurger(
-        req.body.burger_id,
-        req.body.devoured,
-        function (SQLResp) {
+    db.BurgerV2.update({
+        burger_name: req.body.burger_name,
+        devoured: parseInt(req.body.devoured)
+    }, {
+        where: {
+            id: parseInt(req.body.burger_id)
+        }
+    })
+        .then(function(data) {
             res.redirect("/");
-            console.log('-------- SQL Results: ' + JSON.stringify(SQLResp, null, 2));
+            console.log('-------- SQL Results: ' + JSON.stringify(data, null, 2));
         });
+
 });
 
 // Export routes for server.js to use.
